@@ -13,8 +13,10 @@ class Bond:
 	'''
 	
 	matured = False
+	defaulted = False
 	june_coupon_history = []
 	dec_coupon_history = []
+	
 	
 	def __init__(self, maturity_year, coupon, amount_outstanding, proportion_of_revenue, lien_priority):							
 		self.maturity_year = maturity_year
@@ -36,7 +38,11 @@ class Bond:
 			
 		self.amount_outstanding = self.amount_outstanding - interest_payment
 		
-	def compile_coupon_history():
+	def update_worksheet(bond_type, col):
+		ctr = 10		
+		for payment in self.june_coupon_history:
+			worksheet_turbos.range(col + cstr(ctr)).value = payment
+			ctr += 1
 			
 	
 class TurboBond(Bond):
