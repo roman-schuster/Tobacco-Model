@@ -21,6 +21,8 @@ dsrfIsFull = True if (dsrf_max == dsrf_current) else False
 current_year = 2017
 end_year = 2099
 
+default_scenario = False
+
 # Excel-Python Helper Variables #
 num_turbos = worksheet_turbos.range('B1').value
 num_serials = worksheet_serials.range('B1').value
@@ -66,5 +68,48 @@ for year in range(Current_year, end_year):
     total_payments = 0
     december_interest_payments = 0
     available_revs = pledged_revs[year]
+    amount_to_turbo = 0
+    
+    # June Interest Serial Bonds
+    for bond in serial_bonds:
+        total_payments += bond.calc_interest_payment()
+        bond.pay_interest("June")
+        
+    # June Interest Turbo Bonds #    
+    for bond in turbo_Bonds:
+        total_payments += bond.calc_interest_payment()
+        bond.pay_interest("June")
+      
+    # Principal Payment Serial Bonds #
+    for bond in serial_bonds:
+            # MAKE A CLASS FUNCTION TO DO THIS!!! #
+        if bond.maturity_year == year:
+            total_payments += bond.amount_outstanding
+            bond.amount_outstanding = 0
+            bond.matured = True
+            
+    # December Interest Serial Bonds #
+    for bond in serial_bonds:
+            total_payments += bond.calc_interest_payment()
+            bond.pay_interest("December")
+    
+    # December Interest Turbo Bonds 1st Estimation #
+    for bond in turbo_bonds:
+            december_interest_payments += bond.calc_interest_payment
+            
+    # Turbo Payment Estimation #
+    if (total_payments + december_interest_payments) < available_revs:
+        amount_to_turbo = available_revs - (total_payments + december_interest_payments)
+        
+        # Figure out which bonds to turbo - how do I signify priority? #
+        while amount_to_turbo > 0:
+            
+    # December Interest Payment Actual Calculation #
+    
+    # Paying the Turbo Bonds #
+    
+    # Paying December Interest on Turbo Bonds #
     
     
+    
+            
