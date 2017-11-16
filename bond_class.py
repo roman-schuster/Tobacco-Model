@@ -27,7 +27,11 @@ class Bond:
 
 	def calc_interest_payment():			
 		return (self.coupon * self.amount_outstanding)
-		
+	
+	
+	def is_matured():
+		return self.matured
+	
 	def pay_interest(month):
 		interest_payment = self.calc_interest_payment()
 		
