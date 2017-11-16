@@ -112,4 +112,25 @@ for year in range(Current_year, end_year):
     
     
     
+def format_liens(list_of_bonds):
+    '''
+    Takes list of bonds as an input
+    Returns a dict of liens with bond maturity as key and list of bonds as value
+    '''
+    unique_liens = []
+    return_dict = {}
+    
+    for bond in list_of_bonds:
+        if bond.maturity not in unique_liens:
+            unique_liens.append(cstr(bond.maturity))
+            
+    for lien in unique_liens:
+        return_dict[lien] = []
+        
+    for bond in list_of_bonds:
+        if cstr(bond.maturity) in return_dict.keys():
+            return_dict[cstr(bond.maturity)].append(bond)
+            
+    return return_dict        
+    
             
