@@ -48,18 +48,20 @@ def build_column_dict():
     
     return column_dictionary
 
-        
+col_dict = build_column_dict()        
     
 ## Initialization ##
 # Initializing Turbo Bonds #
 for i in range(num_turbos):
-    cusip = worksheet_turbos.range(turbo_ints_to_cols[i] + cstr(3)).value
-    maturity = worksheet_turbos.range(turbo_ints_to_cols[i] + cstr(4)).value
-    coupon = worksheet_turbos.range(turbo_ints_to_cols[i] + cstr(5)).value
-    prop_of_revs = worksheet_turbos.range(turbo_ints_to_cols[i] + cstr(6)).value
-    amt_outstanding = worksheet_turbos.range(turbo_ints_to_cols[i] + cstr(7)).value
+    home_col_int = 2 + (i*6)
+    home_col = col_dict[home_col_int]
     
-    turbo_bonds.append(Turbo_Bond(cusip, maturity, coupon, prop_of_revs, amt_outstanding))
+    maturity = worksheet_turbos.range(home_col + cstr(4)).value
+    coupon = worksheet_turbos.range(home_col + cstr(5)).value
+    lien_priority = worksheet_turbos.range(home_col + cstr(6)).value
+    amt_outstanding = worksheet_turbos.range(home_col + cstr(7)).value
+    
+    turbo_bonds.append(Turbo_Bond(maturity, coupon, amt_outstanding, lien_priority, home_col_int))
 
 # Initializing Pledged Revenues #
 for i in range(5, 88):
@@ -67,12 +69,16 @@ for i in range(5, 88):
     
 # Initializing Serial Bonds #    
 for i in range(num_serials):
-    cusip = worksheet_serials.range(serial_ints_to_cols[i] + cstr(3)).value
-    maturity = worksheet_serials.range(serial_ints_to_cols[i] + cstr(4)).value
-    coupon = worksheet_serials.range(serial_ints_to_cols[i] + cstr(5)).value
-    amt_outstanding = worksheet_serials.range(serial_ints_to_cols[i] + cstr(6)).value
+    home_col_int = 2 + (5*i)
+    home_col = col_dict[home_col_int]
     
-    serial_bonds.append(Serial_Bond(cusip, maturity, coupon, amt_outstanding))
+    maturity = worksheet_serials.range(home_col + cstr(4)).value
+    coupon = worksheet_serials.range(home_col + cstr(5)).value
+    amt_outstanding = worksheet_serials.range(home_col + cstr(6)).value
+    #### YOU NEED TO ADD THIS ROW TO THE EXCEL SHEET! ####
+    lien = worksheet_serials.range(home_col + cstr(7)).value
+    
+    serial_bonds.append(Serial_Bond(maturity, coupon, amt_outstanding, lien))
     
 ## Main ##   
 for year in range(Current_year, end_year):
