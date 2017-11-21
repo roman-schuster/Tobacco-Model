@@ -103,8 +103,17 @@ for year in range(Current_year, end_year):
         
     # June Interest Turbo Bonds #    
     for bond in turbo_Bonds:
-        total_payments += bond.calc_interest_payment()
-        bond.pay_interest("June")
+        if bond.is_outstanding():
+            if available_revs >= bond.calc_interest_payment():
+                available_revs -= bond.calc_interest_payment()
+                bond.pay_interest("June")
+            elif (available_revs  + dsrf_Current) >= bond.calc_interest_payment():
+                dsrf_current -= (bond.calc_interest_payment() - available_revs)
+                available_revs = 0
+                bond.pay_interest("June")
+            else:
+                default_has_occurred = True
+                
       
     # Principal Payment Serial Bonds #
     for bond in serial_bonds:
