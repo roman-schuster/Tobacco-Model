@@ -21,22 +21,35 @@ dsrfIsFull = True if (dsrf_max == dsrf_current) else False
 current_year = 2017
 end_year = 2099
 
-default_scenario = False
+default_has_occurred = False
 
 # Excel-Python Helper Variables #
 num_turbos = worksheet_turbos.range('B1').value
 num_serials = worksheet_serials.range('B1').value
 
-turbo_ints_to_cols = {0:'B', 1:'H', 2:'N', 3:'T', 4:'Z', 5:'AF',
-    6:'AL', 7:'AR', 8:'AX', 9:'BD', 10:'BJ',
-    11:'BP', 12:'BV', 13:'CB', 14:'CH', 15:'CN',
-    16:'CT', 17:'CZ', 18:'DF', 19:'DL', 20:'DR'}
+def build_column_dict():
+    '''
+    Builds and returns a dictionary
+    Keys: Integers between 1 and 701
+    Values: String value of excel column corresponding to int (1 is "A", 27 is "AA", 55 is "BC", 701 is "ZZ")
+    '''
+    column_dictionary = {1: "A", 2: "B", 3: "C", 4: "D", 5: "E", 6: "F", 7: "G", 8: "H", 9: "I", 10: "J",
+                        11: "K", 12: "L", 13: "M", 14: "N", 15: "O", 16: "P", 17: "Q", 18: "R", 19: "S", 20: "T",
+                        21: "U", 22: "V", 23: "W", 24: "X", 25: "Y", 26: "Z"}
 
-serial_ints_to_cols = {0:'B', 1:'G', 2:'L', 3:'Q', 4:'V', 5:'AA',
-    6:'AF', 7:'AK', 8:'AP', 9:'AU', 10:'AZ',
-    11:'BE', 12:'BJ', 13:'BO', 14:'BT', 15:'BY',
-    16:'CD', 17:'CI', 18:'CN', 19:'CS', 20:'CX'}
+    assistant_to_the_column_dictionary = {27: "A", 53: "B", 79: "C", 105: "D", 131: "E", 157: "F", 183: "G",
+                                          209: "H", 235: "I", 261: "J", 287: "K", 313: "L", 339: "M", 365: "N",
+                                          391: "O", 417: "P", 443: "Q", 469: "R", 495: "S", 521: "T", 547: "U",
+                                          573: "V", 599: "W", 625: "X", 651: "Y", 677: "Z"}
+    
+    for i in range(27, 702, 26):
+        for j in range(0, 26):
+            column_dictionary[i+j] = assistant_to_the_column_dictionary[i] + column_dictionary[j+1]
+    
+    return column_dictionary
 
+        
+    
 ## Initialization ##
 # Initializing Turbo Bonds #
 for i in range(num_turbos):
