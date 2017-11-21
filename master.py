@@ -84,15 +84,22 @@ for i in range(num_serials):
 for year in range(Current_year, end_year):
     
     # Minor Variables #
-    total_payments = 0
     december_interest_payments = 0
     available_revs = pledged_revs[year]
     amount_to_turbo = 0
     
     # June Interest Serial Bonds
     for bond in serial_bonds:
-        total_payments += bond.calc_interest_payment()
-        bond.pay_interest("June")
+        if bond.is_outstanding():
+            if available_revs >= bond.calc_interest_payment():
+                available_revs -= bond.calc_interest_payment()
+                bond.pay_interest("June")
+            elif (available_revs + dsrf_current) >= bond.calc_interest_payment():
+                dsrf_current -= (bond.calc_interest_payment() - available_revs)
+                available_revs = 0
+                bond.pay_interest("June")
+            else:
+                default_has_occurred = True
         
     # June Interest Turbo Bonds #    
     for bond in turbo_Bonds:
