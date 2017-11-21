@@ -18,13 +18,12 @@ class Bond:
 	dec_coupon_history = []
 	
 	
-	def __init__(self, maturity_year, coupon, amount_outstanding, proportion_of_revenue, lien_priority, home_column):							
+	def __init__(self, maturity_year, coupon, amount_outstanding, lien_priority, home_column_int):							
 		self.maturity_year = maturity_year
 		self.coupon = coupon
 		self.amount_outstanding = amount_outstanding
-		self.proportion_of_revenue = proportion_of_revenue
 		self.lien_priority = lien_priority
-		self.home_column = home_column
+		self.home_column_int = home_column_int
 
 	def calc_interest_payment():			
 		return (self.coupon * self.amount_outstanding)
@@ -32,8 +31,16 @@ class Bond:
 	def is_matured():
 		return self.matured
 	
+        def is_defaulted():
+		return self.defaulted
+	
+	def is_outstanding():
+		if (not self.matured) and (not self.defaulted) and (self.amount_outstanding > 0):
+			return True
+		return False
+	
 	def pay_interest(month):
-		'''
+	    '''
         Calculates current interest and adds to appropriate payment history
         '''
 		interest_payment = self.calc_interest_payment()
