@@ -89,31 +89,10 @@ for year in range(Current_year, end_year):
     amount_to_turbo = 0
     
     # June Interest Serial Bonds
-    for bond in serial_bonds:
-        if bond.is_outstanding():
-            if available_revs >= bond.calc_interest_payment():
-                available_revs -= bond.calc_interest_payment()
-                bond.pay_interest("June")
-            elif (available_revs + dsrf_current) >= bond.calc_interest_payment():
-                dsrf_current -= (bond.calc_interest_payment() - available_revs)
-                available_revs = 0
-                bond.pay_interest("June")
-            else:
-                default_has_occurred = True
+    interest_payment(serial_bonds, "June")
         
     # June Interest Turbo Bonds #    
-    for bond in turbo_Bonds:
-        if bond.is_outstanding():
-            if available_revs >= bond.calc_interest_payment():
-                available_revs -= bond.calc_interest_payment()
-                bond.pay_interest("June")
-            elif (available_revs  + dsrf_current) >= bond.calc_interest_payment():
-                dsrf_current -= (bond.calc_interest_payment() - available_revs)
-                available_revs = 0
-                bond.pay_interest("June")
-            else:
-                default_has_occurred = True
-                
+    interest_payment(turbo_bonds, "June")
       
     # Principal Payment Serial Bonds #
     for bond in serial_bonds:
@@ -146,34 +125,22 @@ for year in range(Current_year, end_year):
                 default_has_occurred = True
             
     # December Interest Serial Bonds #
-    for bond in serial_bonds:
-        if bond.is_outstanding():
-            if available_revs >= bond.calc_interest_payment():
-                total_payments += bond.calc_interest_payment()
-                bond.pay_interest("December")
-            if (available_revs + dsrf_current) >= bond.calc_interest_payment():
-                dsrf_current -= (bond.calc_interest_payment() - available_revs)
-                available_revs = 0
-                bond.pay_interest("December")
-            else:
-                default_has_occurred = True
+    interest_payment(serial_bonds, "December")
     
     # December Interest Turbo Bonds 1st Estimation #
-    for bond in turbo_bonds:
-            december_interest_payments += bond.calc_interest_payment
+    interest_payment(turbo_bonds, "December Estimate")
             
     # Turbo Payment Estimation #
-    if (total_payments + december_interest_payments) < available_revs:
-        amount_to_turbo = available_revs - (total_payments + december_interest_payments)
+    if (available_revs - december_interest_payments) > 0:
+        amount_to_turbo = available_revs - december_interest_payments
         
         # Figure out which bonds to turbo - how do I signify priority? #
         while amount_to_turbo > 0:
             
-    # December Interest Payment Actual Calculation #
+    # December Interest Turbo Bonds #
+    interest_payment(turbo_bonds, "December")
     
     # Paying the Turbo Bonds #
-    
-    # Paying December Interest on Turbo Bonds #
     
     
     
@@ -207,6 +174,21 @@ def has_unique_lien(bond, lien_dict):
     else:
         return False
             
-def interest_payment(bond_list):
-    
+def interest_payment(bond_list, month):
+    for bond in bond_list:
+        if bond.is_outstanding():
+            if (month == "June") or (month == "December"):
+                if available_revs >= bond.calc_interest_payment():
+                    available_revs -= bond.calc_interest_payment()
+                    bond.pay_interest(month)
+                elif (available_revs + dsrf_current) >= bond.calc_interest_payment():
+                    dsrf_current -= (bond.calc_interest_payment() - available_revs)
+                    dsrf_is_full = False
+                    available_revs = 0
+                    bond.pay_interest(month)
+                else:
+                    default_has_occurred = True
+            elif month == "December Estimate":
+                december_interest_payments += bond.calc_interest_payment()
+                
         
