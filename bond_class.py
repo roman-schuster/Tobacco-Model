@@ -17,7 +17,6 @@ class Bond:
 	june_coupon_history = []
 	dec_coupon_history = []
 	
-	
 	def __init__(self, maturity_year, coupon, amount_outstanding, lien_priority, home_column_int):							
 		self.maturity_year = maturity_year
 		self.coupon = coupon
@@ -27,14 +26,19 @@ class Bond:
 
 	def calc_interest_payment():			
 		return (self.coupon * self.amount_outstanding)
+    
+    def is_maturing(year):
+        if self.year == year:
+            return True
+        return False
 	
 	def is_matured():
 		return self.matured
 	
-        def is_defaulted():
-		return self.defaulted
-	
-	def is_outstanding():
+    def is_defaulted():
+	    return self.defaulted
+
+    def is_outstanding():
 		if (not self.matured) and (not self.defaulted) and (self.amount_outstanding > 0):
 			return True
 		return False
