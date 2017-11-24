@@ -107,7 +107,7 @@ for year in range(Current_year, end_year):
             if available_revs >= bond.calc_interest_payment():
                 available_revs -= bond.calc_interest_payment()
                 bond.pay_interest("June")
-            elif (available_revs  + dsrf_Current) >= bond.calc_interest_payment():
+            elif (available_revs  + dsrf_current) >= bond.calc_interest_payment():
                 dsrf_current -= (bond.calc_interest_payment() - available_revs)
                 available_revs = 0
                 bond.pay_interest("June")
@@ -117,16 +117,46 @@ for year in range(Current_year, end_year):
       
     # Principal Payment Serial Bonds #
     for bond in serial_bonds:
-            # MAKE A CLASS FUNCTION TO DO THIS!!! #
-        if bond.maturity_year == year:
-            total_payments += bond.amount_outstanding
-            bond.amount_outstanding = 0
-            bond.matured = True
+        if bond.is_outstanding() and bond.maturity_year == year:
+            if available_revs >= bond.amount_outstanding:
+                total_payments += bond.amount_outstanding
+                bond.amount_outstanding = 0
+                bond.matured = True
+            elif (available_revs + dsrf_current) >= bond.amount_outstanding:
+                dsrf_current -= (bond.amount_outstanding - available_revs)
+                available_revs = 0
+                bond.amount_outstanding = 0
+                bond.matured = True
+            else:
+                default_has_occurred = True
+            
+    # Principal Payment Turbo Bonds #
+    for bond in turbo_bonds:
+        if bond.is_outstanding() and bond.maturity_year == year:
+            if available_revs >= bond.amount_outstanding:
+                total_payments += bond.amount_outstanding
+                bond.amount_outstanding = 0
+                bond.matured = True
+            elif (available_revs + dsrf_current) >= bond.amount_outstanding:
+                dsrf_current -= (bond.amount_outstanding - available_revs)
+                available_revs = 0
+                bond.amount_outstanding = 0
+                bond.matured = True
+            else:
+                default_has_occurred = True
             
     # December Interest Serial Bonds #
     for bond in serial_bonds:
-            total_payments += bond.calc_interest_payment()
-            bond.pay_interest("December")
+        if bond.is_outstanding():
+            if available_revs >= bond.calc_interest_payment():
+                total_payments += bond.calc_interest_payment()
+                bond.pay_interest("December")
+            if (available_revs + dsrf_current) >= bond.calc_interest_payment():
+                dsrf_current -= (bond.calc_interest_payment() - available_revs)
+                available_revs = 0
+                bond.pay_interest("December")
+            else:
+                default_has_occurred = True
     
     # December Interest Turbo Bonds 1st Estimation #
     for bond in turbo_bonds:
@@ -167,5 +197,16 @@ def format_liens(list_of_bonds):
             return_dict[cstr(bond.maturity)].append(bond)
             
     return return_dict        
-    
+
+def has_unique_lien(bond, lien_dict):
+    '''
+    Returns true if bond is the only one in the lien
+    '''
+    if len(lien_dict[cstr(bond.maturity)]) = 1:
+        return True
+    else:
+        return False
             
+def interest_payment(bond_list):
+    
+        
