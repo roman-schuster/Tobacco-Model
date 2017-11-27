@@ -86,7 +86,6 @@ for year in range(Current_year, end_year):
     available_revs = pledged_revs[year]
     december_interest_payments = 0
     amount_to_turbo = 0
-    turbo_lien_dict = format_liens(turbo_bonds)
     
     if default_has_occurred:
         # What happens when we default? #
@@ -111,50 +110,57 @@ for year in range(Current_year, end_year):
             
         # Turbo Payment Estimation #
         if (available_revs - december_interest_payments) > 0:
-            
             amount_to_turbo = available_revs - december_interest_payments
         
         # Turbo Bond Payment #
         if amount_to_turbo > 0:
-            for lien in turbo_lien_dict:
+            turbo_maturity_dict = format_turbos_by_maturity(turbo_bonds)
+            for yr in turbo_maturity_dict.keys():
+                if amount_to_turbo > 0:
+                    
+                    yr_total_outstanding = 0
+                    prop_of_revs = []
+                    payments = []
                 
-                lien_total_value = 0
-                prop_of_revs = []
-                payments = []
-                
-                for bond in lien:
-                    lien_total_value += bond.amount_outstanding
-                for bond in lien:
-                    prop_of_revs.append(bond.amount_outstanding / lien_total_value)
-                    
-                if available_revs < lien_total_value:
-                    for bond in lien:
-                        payments.append(prop_of_revs * amount_to_turbo)
-                    
-                        
-                elif available_revs >= lien_total_value:
-                    
+                    for bond in turbo_maturity_dict[yr]:
+                        yr_total_outstanding += bond.amount_outstanding
+                        # IF we have more cash than total value, we don't need proportion of revs, just pay em down #
+                    if amount_to_turbo < yr_total_outstanding:
+                        # Not able to pay off everything #
+                        for bond in turbo_maturity_dict[yr]:
+                            prop_of_revs.append(bond.amount_outstanding / yr_total_outstanding)
+                        for rev in prop_of_revs:
+                            payments.append(amount_to_turbo * rev)
+                        for bond in turbo_maturity_dict[yr]:
+                            payment = payments.pop(0) 
+                            available_revs -= payment
+                            bond.amount_outstanding -= payment
+                            bond.turbo_payment_history.append(payment)
+                        amount_to_turbo = 0
+            
+                    elif available_revs >= lien_total_value:
+                        # Otherwise we ARE able to turbo the rest of the maturity #
 
         # December Interest Turbo Bonds #
         available_revs, dsrf_current, december_interest_payments, default_has_occurred = interest_payment(turbo_bonds, "December", available_revs, dsrf_current, december_interest_payments, default_has_occurred)
     
         # Paying the Turbo Bonds #
     
-def format_liens(list_of_bonds):
+def format_turbos_by_maturity(list_of_bonds):
     '''
     Takes list of bonds as an input
-    Returns a dict of liens with bond maturity as key and list of bonds as value
+    Returns a dict with bond maturity as key and list of bonds as value
     ONLY RETURNS BONDS THAT HAVEN'T DEFAULTED OR MATURED!
     '''
-    unique_liens = []
+    unique_years = []
     return_dict = {}
     
     for bond in list_of_bonds:
-        if (bond.is_outstanding()) and (bond.maturity not in unique_liens):
-            unique_liens.append(cstr(bond.maturity))
+        if (bond.is_outstanding()) and (bond.maturity not in unique_years):
+            unique_years.append(cstr(bond.maturity))
             
-    for lien in unique_liens:
-        return_dict[lien] = []
+    for year in unique_years:
+        return_dict[year] = []
         
     for bond in list_of_bonds:
         if (bond.is_outstanding()) and (cstr(bond.maturity) in return_dict.keys()):
