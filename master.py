@@ -83,60 +83,81 @@ for i in range(num_serials):
 ## Main ##   
 for year in range(Current_year, end_year):
     
-    # Minor Variables #
-    december_interest_payments = 0
     available_revs = pledged_revs[year]
+    december_interest_payments = 0
     amount_to_turbo = 0
+    turbo_lien_dict = format_liens(turbo_bonds)
     
-    # June Interest Serial Bonds
-    available_revs, dsrf_current, december_interest_payments, default_has_occurred = interest_payment(serial_bonds, "June", available_revs, dsrf_current, december_interest_payments, default_has_occurred)
+    if default_has_occurred:
+        # What happens when we default? #
+    else:
+        # June Interest Serial Bonds
+        available_revs, dsrf_current, december_interest_payments, default_has_occurred = interest_payment(serial_bonds, "June", available_revs, dsrf_current, december_interest_payments, default_has_occurred)
         
-    # June Interest Turbo Bonds #    
-    available_revs, dsrf_current, december_interest_payments, default_has_occurred = interest_payment(turbo_bonds, "June", available_revs, dsrf_current, december_interest_payments, default_has_occurred)
+        # June Interest Turbo Bonds #    
+        available_revs, dsrf_current, december_interest_payments, default_has_occurred = interest_payment(turbo_bonds, "June", available_revs, dsrf_current, december_interest_payments, default_has_occurred)
       
-    # Principal Payment Serial Bonds #
-    available_revs, dsrf_current, default_has_occurred = principal_payment(serial_bonds, year, available_revs, dsrf_current, default_has_occurred)
+        # Principal Payment Serial Bonds #
+        available_revs, dsrf_current, default_has_occurred = principal_payment(serial_bonds, year, available_revs, dsrf_current, default_has_occurred)
             
-    # Principal Payment Turbo Bonds #
-    available_revs, dsrf_current, default_has_occurred = principal_payment(turbo_bonds, year, available_revs, dsrf_current, default_has_occurred)
+        # Principal Payment Turbo Bonds #
+        available_revs, dsrf_current, default_has_occurred = principal_payment(turbo_bonds, year, available_revs, dsrf_current, default_has_occurred)
             
-    # December Interest Serial Bonds #
-    available_revs, dsrf_current, december_interest_payments, default_has_occurred = interest_payment(serial_bonds, "December", available_revs, dsrf_current, december_interest_payments, default_has_occurred)
+        # December Interest Serial Bonds #
+        available_revs, dsrf_current, december_interest_payments, default_has_occurred = interest_payment(serial_bonds, "December", available_revs, dsrf_current, december_interest_payments, default_has_occurred)
     
-    # December Interest Turbo Bonds 1st Estimation #
-    available_revs, dsrf_current, december_interest_payments, default_has_occurred = interest_payment(turbo_bonds, "December Estimate", available_revs, dsrf_current, december_interest_payments, default_has_occurred)
+        # December Interest Turbo Bonds 1st Estimation #
+        available_revs, dsrf_current, december_interest_payments, default_has_occurred = interest_payment(turbo_bonds, "December Estimate", available_revs, dsrf_current, december_interest_payments, default_has_occurred)
             
-    # Turbo Payment Estimation #
-    if (available_revs - december_interest_payments) > 0:
-        amount_to_turbo = available_revs - december_interest_payments
+        # Turbo Payment Estimation #
+        if (available_revs - december_interest_payments) > 0:
+            
+            amount_to_turbo = available_revs - december_interest_payments
         
-        # Figure out which bonds to turbo - how do I signify priority? #
-        while amount_to_turbo > 0:
-            
-    # December Interest Turbo Bonds #
-    available_revs, dsrf_current, december_interest_payments, default_has_occurred = interest_payment(turbo_bonds, "December", available_revs, dsrf_current, december_interest_payments, default_has_occurred)
+        # Turbo Bond Payment #
+        if amount_to_turbo > 0:
+            for lien in turbo_lien_dict:
+                
+                lien_total_value = 0
+                prop_of_revs = []
+                payments = []
+                
+                for bond in lien:
+                    lien_total_value += bond.amount_outstanding
+                for bond in lien:
+                    prop_of_revs.append(bond.amount_outstanding / lien_total_value)
+                    
+                if available_revs < lien_total_value:
+                    for bond in lien:
+                        payments.append(prop_of_revs * amount_to_turbo)
+                    
+                        
+                elif available_revs >= lien_total_value:
+                    
+
+        # December Interest Turbo Bonds #
+        available_revs, dsrf_current, december_interest_payments, default_has_occurred = interest_payment(turbo_bonds, "December", available_revs, dsrf_current, december_interest_payments, default_has_occurred)
     
-    # Paying the Turbo Bonds #
-    
-    
+        # Paying the Turbo Bonds #
     
 def format_liens(list_of_bonds):
     '''
     Takes list of bonds as an input
     Returns a dict of liens with bond maturity as key and list of bonds as value
+    ONLY RETURNS BONDS THAT HAVEN'T DEFAULTED OR MATURED!
     '''
     unique_liens = []
     return_dict = {}
     
     for bond in list_of_bonds:
-        if bond.maturity not in unique_liens:
+        if (bond.is_outstanding()) and (bond.maturity not in unique_liens):
             unique_liens.append(cstr(bond.maturity))
             
     for lien in unique_liens:
         return_dict[lien] = []
         
     for bond in list_of_bonds:
-        if cstr(bond.maturity) in return_dict.keys():
+        if (bond.is_outstanding()) and (cstr(bond.maturity) in return_dict.keys()):
             return_dict[cstr(bond.maturity)].append(bond)
             
     return return_dict        
