@@ -1,5 +1,5 @@
 class Bond:
-	'''
+    '''
 	Muni bond class - please only use cusips as variable names for these bonds
 	
 	maturity_year: int
@@ -32,8 +32,8 @@ class Bond:
             return True
         return False
 	
-	def is_matured():
-		return self.matured
+    def is_matured():
+	    return self.matured
 	
     def is_defaulted():
 	    return self.defaulted
@@ -63,9 +63,7 @@ class TurboBond(Bond):
 	
 	
 class SerialBond(Bond):
-	
-def calc_turbo(turbo_bonds):
-	total_december_payments = 0
-	for bond in turbo_bonds:
-		total_december_payments += bond.calc_interest_payment()
-			
+    '''
+    Inherits from class Bond
+    '''
+    
