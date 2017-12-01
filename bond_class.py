@@ -13,7 +13,6 @@ class Bond:
 	'''
 	
 	matured = False
-	defaulted = False
 	june_coupon_history = []
 	dec_coupon_history = []
 	
@@ -35,13 +34,12 @@ class Bond:
     def is_matured():
 	    return self.matured
 	
-    def is_defaulted():
-	    return self.defaulted
+    def mature():
+        self.amount_outstanding = 0
+        self.matured = True
 
     def is_outstanding():
-		if (not self.matured) and (not self.defaulted) and (self.amount_outstanding > 0):
-			return True
-		return False
+		return (not self.matured)
 	
 	def pay_interest(month):
 	    '''
