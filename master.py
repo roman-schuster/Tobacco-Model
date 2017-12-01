@@ -20,6 +20,7 @@ dsrfIsFull = True if (dsrf_max == dsrf_current) else False
 
 current_year = 2017
 end_year = 2099
+year_of_default = 0
 
 default_has_occurred = False
 
@@ -91,23 +92,23 @@ for year in range(Current_year, end_year):
         # What happens when we default? #
     else:
         # June Interest Serial Bonds
-        available_revs, dsrf_current, december_interest_payments, default_has_occurred = interest_payment(serial_bonds, "June", available_revs, dsrf_current, december_interest_payments, default_has_occurred)
+        available_revs, dsrf_current, december_interest_payments, default_has_occurred, year_of_default = interest_payment(serial_bonds, "June", available_revs, dsrf_current, december_interest_payments, default_has_occurred, year)
         
         # June Interest Turbo Bonds #    
         if not default_has_occurred:
-            available_revs, dsrf_current, december_interest_payments, default_has_occurred = interest_payment(turbo_bonds, "June", available_revs, dsrf_current, december_interest_payments, default_has_occurred)
+            available_revs, dsrf_current, december_interest_payments, default_has_occurred, year_of_default = interest_payment(turbo_bonds, "June", available_revs, dsrf_current, december_interest_payments, default_has_occurred, year)
       
         # Principal Payment Serial Bonds #
         if not default_has_occurred:
-            available_revs, dsrf_current, default_has_occurred = principal_payment(serial_bonds, year, available_revs, dsrf_current, default_has_occurred)
+            available_revs, dsrf_current, default_has_occurred, year_of_default = principal_payment(serial_bonds, year, available_revs, dsrf_current, default_has_occurred)
             
         # Principal Payment Turbo Bonds #
         if not default_has_occurred:
-            available_revs, dsrf_current, default_has_occurred = principal_payment(turbo_bonds, year, available_revs, dsrf_current, default_has_occurred)
+            available_revs, dsrf_current, default_has_occurred, year_of_default = principal_payment(turbo_bonds, year, available_revs, dsrf_current, default_has_occurred)
             
         # December Interest Serial Bonds #
         if not default_has_occurred:
-            available_revs, dsrf_current, december_interest_payments, default_has_occurred = interest_payment(serial_bonds, "December", available_revs, dsrf_current, december_interest_payments, default_has_occurred)
+            available_revs, dsrf_current, december_interest_payments, default_has_occurred, year_of_default = interest_payment(serial_bonds, "December", available_revs, dsrf_current, december_interest_payments, default_has_occurred, year)
     
         # December Interest Turbo Bonds 1st Estimation #
         if not default_has_occurred:
@@ -149,13 +150,14 @@ for year in range(Current_year, end_year):
                         amount_to_turbo -= lien_total_value
                         for bond in turbo_maturity_dict[yr]:
                             bond.turbo_payment_history.append(bond.amount_outstanding)
-                            bond.amount_outstanding = 0
-                            bond.matured = True
+                            bond.mature()
                             
         # December Interest Turbo Bonds #
+        # How do we pay interest if a default has occurred but we have enough?? #
         if not default_has_occurred:
             available_revs, dsrf_current, december_interest_payments, default_has_occurred = interest_payment(turbo_bonds, "December", available_revs, dsrf_current, december_interest_payments, default_has_occurred)
-    
+        elif default_has_occurred and (available_revs > 0):
+            
     
 def format_turbos_by_maturity(list_of_bonds):
     '''
@@ -188,7 +190,7 @@ def has_unique_lien(bond, lien_dict):
     else:
         return False
             
-def interest_payment(bond_list, month, revs, dsrf, dec_payments, default):
+def interest_payment(bond_list, month, revs, dsrf, dec_payments, default, yr):
     for bond in bond_list:
         if bond.is_outstanding():
             if (month == "June") or (month == "December"):
@@ -203,23 +205,34 @@ def interest_payment(bond_list, month, revs, dsrf, dec_payments, default):
                     default = True
             elif month == "December Estimate":
                 dec_payments += bond.calc_interest_payment()
-    return (revs, dsrf, dec_payments, default)            
+                
+    if default and (month = "June" or month = "December"):
+        # TBH I'm pretty sure we could never feasibly default on the turbos in December... how do we fix that? #
+        yr_of_default = yr
+    else:
+        yr_of_default = 0
+        
+    return (revs, dsrf, dec_payments, default, yr_of_default)            
         
 def principal_payment(bond_list, yr, revs, dsrf, default):
     for bond in bond_list:
         if bond.is_outstanding() and bond.is_maturing(yr):
             if revs >= bond.amount_outstanding:
                 revs -= bond.amount_outstanding
-                bond.amount_outstanding = 0
-                bond.matured = True
+                bond.mature()
             elif (revs + dsrf) >= bond.amount_outstanding:
                 dsrf -= (bond.amount_outstanding - revs)
                 revs = 0
-                bond.amount_outstanding = 0
-                bond.matured = True
+                bond.mature()
             else:
                 default = True
-    return (revs, dsrf, default)
+                
+    if default = True:
+        yr_of_default = yr
+    else:
+        yr_of_default = 0
+        
+    return (revs, dsrf, default, yr_of_default)
     
     
     
