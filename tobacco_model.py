@@ -277,8 +277,13 @@ for year in range(current_year, end_year):
         # Turbo Payment Estimation #
         if (available_revs - december_interest_payments) and (not default_has_occurred) > 0:
             amount_to_turbo = available_revs - december_interest_payments
-            
         
+        # Turbo Payment #
+        
+        
+        # First Instance of Default #
+        if default_has_occurred:
+            
 
     for bond in serial_bonds:
         bond.update_year_end_balance(year)
