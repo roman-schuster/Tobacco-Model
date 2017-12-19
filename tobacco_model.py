@@ -60,12 +60,12 @@ class Bond:
         elif month == "June":
             self.june_coupon_history[year] = interest_payment
 
-    def turbo(self, year, payment):
+    def update_turbo_history(self, year, payment):
         '''
         this is it
         '''
-        self.amount_outstanding -= payment
         self.turbo_history[year] = payment
+        
 
     def update_year_end_balance(self, year):
         self.year_end_balances[year] = self.amount_outstanding
@@ -279,8 +279,35 @@ for year in range(current_year, end_year):
             amount_to_turbo = available_revs - december_interest_payments
         
         # Turbo Payment #
+        if amount_to_turbo > 0:
+            turbo_formatted_bonds = format_turbo_by_maturity(turbo_bonds)
+            
+            for maturity_year in turbo_formatted_bonds.keys():
+                if len(turbo_formatted_bonds[maturity_year]) = 1:
+                    if amount_to_turbo >= turbo_formatted_bonds[maturity_year][0].amount_outstanding:
+                        turbo_formatted_bonds[maturity_year][0].update_turbo_history(year, turbo_formatted_bonds[maturity_year][0].amount_outstanding)
+                        amount_to_turbo -= turbo_formatted_bonds[maturity_year][0].amount_outstanding
+                        available_revs -= turbo_formatted_bonds[maturity_year][0].amount_outstanding
+                        turbo_formatted_bonds[maturity_year][0].amount_outstanding = 0
+                    else:
+                        turbo_formatted_bonds[maturity_year][0].update_turbo_history(year, amount_to_turbo)
+                        turbo_formatted_bonds[maturity_year][0].amount_outstanding -= amount_to_turbo
+                        available_revs -= amount_to_turbo
+                        amount_to_turbo = 0
+
+                else:
+                    maturity_year_amt_outstanding = 0
+                    rev_proportions = []
+                    
+                    for bond in turbo_formatted_bonds[maturity_year]:
+                        maturity_year_amt_outstanding += bond.amount_outstanding
+                    
+                    if amount_to_turbo >= maturity_year_amt_outstanding:
+                        # we can pay off multiple turbos and need to move to a new maturity year #
+                    else:
+                        # we 
         
-        
+        # December Interest on Turbo Bonds #
         # First Instance of Default #
         if default_has_occurred:
             
