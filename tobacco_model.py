@@ -8,7 +8,9 @@ Created on Fri Feb 23 14:52:25 2018
 import xlwings as xw
 
 # This is the file path to the workbook with the bond structure #
-workbook = xw.Book(r'H:\MUNI\RSchuster\Research\Tobacco Model\Golden_Tobacco_Model.xlsm')
+home_testing_path = r'C:\Users\Roman\Desktop\Golden_Tobacco_Model.xlsm'
+work_testing_path = r'H:\MUNI\RSchuster\Research\Tobacco Model\Golden_Tobacco_Model.xlsm'
+workbook = xw.Book(home_testing_path)
 # This program will open and overwrite the excel file, but won't save it #
 # For best results, keep the file path aimed to an excel template #
 # After running, "save-as" the newly filled in excel with a DIFFERENT name #
@@ -34,6 +36,7 @@ class Bond:
         self.maturity_year = maturity_year
         self.coupon = coupon
         self.amount_outstanding = amount_outstanding
+        self.initial_amount_outstanding = amount_outstanding
         self.lien = lien
         self.price = price
         
@@ -111,7 +114,7 @@ def calc_irr_with_excel_updates(serial_bonds, turbo_bonds):
     '''
     '''
     for bond in serial_bonds:
-        for i in range(10, 92, 1):
+        for i in range(10, 92):
             if int(worksheet_serials.range(col_dict[bond.home_column_int - 1] + str(i)).value) <= bond.year_paid:
                 total = 0
                 if worksheet_serials.range(col_dict[bond.home_column_int] + str(i)).value is not None:
@@ -122,6 +125,40 @@ def calc_irr_with_excel_updates(serial_bonds, turbo_bonds):
                     total += worksheet_serials.range(col_dict[bond.home_column_int + 2] + str(i)).value
                 
                 worksheet_serials.range(col_dict[bond.home_column_int + 3] + str(i)).value = total
+        
+    for bond in serial_bonds:
+        
+        last_row = 10
+        for i in range(11, 92):
+            if worksheet_serials.range(col_dict[bond.home_column_int + 3] + str(i)).value is not None:
+                last_row = i
+            else:
+                break
+        
+        cash_flows = []
+        
+        for i in range(10, last_row + 1):
+            cash_flows.append(float(worksheet_serials.range(col_dict[bond.home_column_int + 3] + str(i)).value))
+        
+        worksheet_serials.range(col_dict[bond.home_column_int + 3] + str(10)).value = bond.initial_amount_outstanding * -1
+
+        for i in range(11, last_row + 2):
+            worksheet_serials.range(col_dict[bond.home_column_int + 3] + str(i)).value = cash_flows[i - 11]
+                                    
+        worksheet_serials.range(col_dict[bond.home_column_int + 3] + str(7)).value = '=irr(' + col_dict[bond.home_column_int + 3] + str(10) + ':' + col_dict[bond.home_column_int + 3] + str(last_row + 1)
+        
+        irr = float(worksheet_serials.range(col_dict[bond.home_column_int + 3] + str(7)).value)
+        
+        for i in range(10, last_row + 2):
+            if (i == (last_row + 1)) or (i == (last_row + 2)):
+                worksheet_serials.range(col_dict[bond.home_column_int + 3] + str(i)).value = ''
+            else:
+                worksheet_serials.range(col_dict[bond.home_column_int + 3] + str(i)).value = cash_flows[i - 10]
+                                        
+        worksheet_serials.range(col_dict[bond.home_column_int + 3] + str(7)).value = irr                    
+                
+                                           
+                                
     
     for bond in turbo_bonds:
         for i in range(10, 92, 1):
